@@ -26,23 +26,11 @@ public class ClientHandler implements Runnable {
         ) {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                // Example command processing
                 if ("START_AUCTION".equalsIgnoreCase(inputLine)) {
-                    // Check if the auction can be started
-                    adminOperations.startAuction(); // You might need to adjust this based on how your AdminOperations class is structured
+                    // AdminOperations class should handle whether it's appropriate to start the auction
+                    adminOperations.startAuction();
                 } else if (inputLine.startsWith("BID")) {
-                    String[] parts = inputLine.split(" ");
-                    if (parts.length == 3) { // Assuming the command is in the format "BID username amount"
-                        try {
-                            int bidAmount = Integer.parseInt(parts[2]);
-                            bids.put(parts[1], bidAmount); // Store or update the bid for this user
-                            out.println("Bid accepted for " + parts[1] + " with amount " + bidAmount);
-                        } catch (NumberFormatException e) {
-                            out.println("Invalid bid amount");
-                        }
-                    } else {
-                        out.println("Invalid bid command");
-                    }
+                    handleBidCommand(inputLine, out);
                 } else if ("END_AUCTION".equalsIgnoreCase(inputLine)) {
                     adminOperations.endAuction();
                 } else {
@@ -58,6 +46,23 @@ public class ClientHandler implements Runnable {
             } catch (IOException e) {
                 System.out.println("Error closing client socket: " + e.getMessage());
             }
+        }
+    }
+
+    private void handleBidCommand(String inputLine, PrintWriter out) {
+        String[] parts = inputLine.split(" ");
+        if (parts.length == 3) { // Assuming the command is in the format "BID username amount"
+            try {
+                int bidAmount = Integer.parseInt(parts[2]);
+                String username = parts[1];
+                // Update the bid for this user, or add if not present
+                bids.merge(username, bidAmount, Integer::max); // This will keep the highest bid only
+                out.println("Bid accepted for " + username + " with amount " + bidAmount);
+            } catch (NumberFormatException e) {
+                out.println("Invalid bid amount");
+            }
+        } else {
+            out.println("Invalid bid command");
         }
     }
 }

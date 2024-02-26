@@ -26,13 +26,11 @@ public class AdminOperations {
         System.out.println("Server initializing...");
         clientHandlerExecutor = Executors.newCachedThreadPool();
         bids = new ConcurrentHashMap<>();
-        // Initialize server resources, e.g., server socket
         try {
             serverSocket = new ServerSocket(12345); // Use your desired port
             startServer();
         } catch (IOException e) {
             System.out.println("Could not listen on the specified port: " + e.getMessage());
-            return;
         }
     }
 
@@ -50,31 +48,14 @@ public class AdminOperations {
         }
     }
 
-    // Access modifier changed to public to allow calling from ClientHandler
     public void startAuction() {
         if (!auctionActive) {
             auctionActive = true;
             System.out.println("Auction has started. Accepting bids for 1 minute.");
             startAuctionTimer();
-            simulateBidding(); // This is for demonstration; real bids come from clients.
         } else {
             System.out.println("Auction is already in progress.");
         }
-    }
-
-    private void simulateBidding() {
-        // This method simulates bid handling. In a real application, bids would come from clients.
-        clientHandlerExecutor.submit(() -> {
-            // Simulate bid processing in a separate thread
-            try {
-                Thread.sleep(10000); // Simulate delay
-                bids.put("User1", 100);
-                Thread.sleep(5000); // Simulate another bid coming in later
-                bids.put("User2", 150);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
     }
 
     private void startAuctionTimer() {
@@ -93,8 +74,9 @@ public class AdminOperations {
         System.out.println("Auction ended.");
 
         // Determine the winning bid
-        bids.entrySet().stream().max((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()))
-                .ifPresent(entry -> System.out.println("Winner is " + entry.getKey() + " with a bid of " + entry.getValue()));
+        bids.entrySet().stream()
+            .max((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()))
+            .ifPresent(entry -> System.out.println("Winner is " + entry.getKey() + " with a bid of " + entry.getValue()));
 
         // Reset for the next auction
         bids.clear();

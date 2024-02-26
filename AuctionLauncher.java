@@ -1,5 +1,3 @@
-import java.io.*;
-import java.net.*;
 import java.sql.*;
 import packs.*;
 import java.util.*;
@@ -49,12 +47,13 @@ public class AuctionLauncher {
                         case 2:
                         UserOperations.viewUsers();
                             break;
-                        case 3:
-                            // Implement start auction functionality
+                            case 3:
+                            adminOperations.startAuction();
                             break;
                         case 4:
-                            // Implement end auction functionality
+                            adminOperations.endAuction();
                             break;
+                        
                         case 5:
                             running = false;
                             System.out.println("Logging out...");
