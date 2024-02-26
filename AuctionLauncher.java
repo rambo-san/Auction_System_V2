@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class AuctionLauncher {
+    private static final AdminOperations adminOperations = new AdminOperations(); // Assuming AdminOperations is in the packs package
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to the Auction System");
@@ -20,7 +22,7 @@ public class AuctionLauncher {
             if (verifyAdminCredentials(username, password)) {
                 System.out.println("Admin authentication successful.");
                 ExecutorService service = Executors.newSingleThreadExecutor();
-                service.submit(() -> startServer()); // Run server in separate thread
+                service.submit(() -> adminOperations.initializeServer()); 
                 
                 TimeUnit.SECONDS.sleep(2); // Wait for server to start
                 boolean running = true;
@@ -87,10 +89,5 @@ public class AuctionLauncher {
             System.out.println("Database error: " + e.getMessage());
         }
         return false;
-    }
-
-    private static void startServer() {
-        System.out.println("Starting the server...");
-        // Server startup logic here
     }
 }
