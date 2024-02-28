@@ -110,9 +110,8 @@ public class BuyerOperations {
         int auctionId = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter your bid amount: ");
         double bidAmount = Double.parseDouble(scanner.nextLine());
-
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "INSERT INTO bids (auction_id, buyer_id, bid_amount, bid_time) VALUES (?, ?, ?, NOW())";
+            String query = "INSERT INTO bids (auction_id, buyer_id, bid_amount) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setInt(1, auctionId);
                 stmt.setInt(2, buyerId);
@@ -120,13 +119,11 @@ public class BuyerOperations {
                 int rowsAffected = stmt.executeUpdate();
                 if (rowsAffected > 0) {
                     System.out.println("Bid placed successfully.");
-                } else {
-                    System.out.println("Failed to place bid.");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Database error or auction not found.");
+            System.out.println("Database error.");
         }
     }
 

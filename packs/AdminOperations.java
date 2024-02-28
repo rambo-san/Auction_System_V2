@@ -52,6 +52,7 @@ public class AdminOperations {
         if (!auctionActive) {
             auctionActive = true;
             System.out.println("Auction has started. Accepting bids for 1 minute.");
+            
             startAuctionTimer();
         } else {
             System.out.println("Auction is already in progress.");
