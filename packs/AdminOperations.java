@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,12 +52,17 @@ public class AdminOperations {
     public void startAuction() {
         if (!auctionActive) {
             auctionActive = true;
-            System.out.println("Auction has started. Accepting bids for 1 minute.");
-            
+            String bidId = generateBidId();
+            System.out.println("Auction has started. Accepting bids for 1 minute. Bid ID: " + bidId);
+            bids.put(bidId, 0);
             startAuctionTimer();
         } else {
             System.out.println("Auction is already in progress.");
         }
+    }
+
+    private String generateBidId() {
+        return UUID.randomUUID().toString();
     }
 
     private void startAuctionTimer() {

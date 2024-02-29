@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Scanner;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class BuyerOperations {
 
@@ -60,25 +63,21 @@ public class BuyerOperations {
         System.out.println("Welcome to the Buyer Dashboard!");
         boolean loggedIn = true;
         while (loggedIn) {
-            System.out.println("1. View available auctions");
-            System.out.println("2. Place a bid");
-            System.out.println("3. View my won auctions");
-            System.out.println("4. Logout");
+            System.out.println("1. Place a bid");
+            System.out.println("2. View my won auctions");
+            System.out.println("3. Logout");
 
             System.out.print("Choose an option: ");
             String option = scanner.nextLine();
 
             switch (option) {
                 case "1":
-                    viewAvailableAuctions(scanner);
-                    break;
-                case "2":
                     placeBid(scanner, buyerId);
                     break;
-                case "3":
+                case "2":
                     viewWonAuctions(scanner, buyerId);
                     break;
-                case "4":
+                case "3":
                     loggedIn = false;
                     System.out.println("You have been logged out.");
                     break;
@@ -88,54 +87,49 @@ public class BuyerOperations {
         }
     }
 
-    private static void viewAvailableAuctions(Scanner scanner) {
-        System.out.println("Available auctions:");
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT a.auction_id, p.name, a.start_time, a.end_time, a.starting_bid FROM auctions a JOIN products p ON a.product_id = p.product_id WHERE a.end_time > NOW()";
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    System.out.println("Auction ID: " + rs.getInt("auction_id") + ", Product: " + rs.getString("name") + ", Start Time: " + rs.getTimestamp("start_time") + ", End Time: " + rs.getTimestamp("end_time") + ", Starting Bid: $" + rs.getBigDecimal("starting_bid"));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Database error.");
-        }
-    }
 
     private static void placeBid(Scanner scanner, int buyerId) {
-        System.out.println("Place a bid on an auction:");
-        System.out.print("Enter Auction ID: ");
-        int auctionId = Integer.parseInt(scanner.nextLine());
-        System.out.print("Enter your bid amount: ");
-        double bidAmount = Double.parseDouble(scanner.nextLine());
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "INSERT INTO bids (auction_id, buyer_id, bid_amount) VALUES (?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setInt(1, auctionId);
-                stmt.setInt(2, buyerId);
-                stmt.setDouble(3, bidAmount);
-                int rowsAffected = stmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    System.out.println("Bid placed successfully.");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Database error.");
-        }
-    }
+            System.out.println("Place a bid");
+            System.out.print("Enter the bid amount: ");
+            double bidAmount = Double.parseDouble(scanner.nextLine());
 
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                // Your existing code to connect to the database and perform the bid placement
+
+                try (Socket socket = new Socket("serverAddress", 12345)) {
+                    // Create an ObjectOutputStream to send the bid details to the server
+                    ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+
+                    
+                    // Create a BidCommand object to send to the server
+                    String command = "BID " + buyerId +" " + bidAmount;
+                    
+                    // Send the bid command to the server
+                    outputStream.writeObject(command);
+                    outputStream.flush();
+
+                    System.out.println("Bid placed successfully.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Error sending bid to the server.");
+                }
+                 
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Database error.");
+            }
+        }
     private static void viewWonAuctions(Scanner scanner, int buyerId) {
         System.out.println("Your won auctions:");
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT a.auction_id, p.name, b.bid_amount FROM auctions a JOIN bids b ON a.auction_id = b.auction_id JOIN products p ON a.product_id = p.product_id WHERE b.bid_amount = (SELECT MAX(bid_amount) FROM bids WHERE auction_id = a.auction_id) AND b.buyer_id = ? AND a.end_time < NOW()";
+            String query = "SELECT bid_id, product_id, bid_amount FROM bids where buyer_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setInt(1, buyerId);
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
-                    System.out.println("Auction ID: " + rs.getInt("auction_id") + ", Product: " + rs.getString("name") + ", Winning Bid: $" + rs.getBigDecimal("bid_amount"));
+                    System.out.println("Bid ID: " + rs.getInt("bid_id"));
+                    System.out.println("Product ID: " + rs.getInt("product_id"));
+                    System.out.println("Bid Amount: " + rs.getDouble("bid_amount"));
                 }
             }
         } catch (Exception e) {
