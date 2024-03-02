@@ -57,8 +57,21 @@ public class AuctionLauncher {
                         case 5:
                             running = false;
                             System.out.println("Logging out...");
+                            adminOperations.logout(); // Add a logout method in AdminOperations class to handle the logout logic
                             service.shutdownNow();
-                            break;
+                            try {
+                                if (!service.awaitTermination(5, TimeUnit.SECONDS)) {
+                                    System.out.println("Forcing shutdown of remaining tasks...");
+                                    service.shutdownNow();
+                                    if (!service.awaitTermination(5, TimeUnit.SECONDS)) {
+                                        System.err.println("Unable to shutdown executor service");
+                                    }
+                                }
+                            } catch (InterruptedException e) {
+                                System.err.println("Error occurred while shutting down executor service: " + e.getMessage());
+                            }
+                            System.out.println("Program closed.");
+                            System.exit(0);
                         default:
                             System.out.println("Invalid choice.");
                     }
