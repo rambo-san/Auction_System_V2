@@ -107,20 +107,21 @@ public void startAuction() {
             auctionTimer.cancel();
         }
         System.out.println("Auction ended.");
-
+    
         // Determine the winning bid
         bids.entrySet().stream()
                 .max((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()))
                 .ifPresent(entry -> System.out.println("Winner is " + entry.getKey() + " with a bid of " + entry.getValue()));
-
+    
         // Reset for the next auction
         bids.clear();
-        clientHandlerExecutor.shutdownNow();
-        // Reinitialize the executor for the next auction
-        clientHandlerExecutor = Executors.newCachedThreadPool();
-
-        auctionEndLatch.countDown(); // Release the latch to allow other threads to continue
+        // Do not shut down the executor if you plan to use it for future auctions
+        // clientHandlerExecutor.shutdownNow(); // Commented out to keep the executor alive for future client handling
+        // clientHandlerExecutor = Executors.newCachedThreadPool(); // Not needed if we keep the executor alive
+    
+        auctionLatch.countDown(); // Release the latch to allow other threads to continue
     }
+    
     
 
     public void logout() {

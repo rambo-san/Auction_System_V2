@@ -29,8 +29,7 @@ public class AuctionLauncher {
                     System.out.println("1. Create user");
                     System.out.println("2. View users");
                     System.out.println("3. Start auction");
-                    System.out.println("4. End auction");
-                    System.out.println("5. Logout");
+                    System.out.println("4. Logout");
                     System.out.print("Enter choice: ");
                     int choice = scanner.nextInt();
                     scanner.nextLine(); // Consume newline
@@ -51,10 +50,6 @@ public class AuctionLauncher {
                             adminOperations.startAuction();
                             break;
                         case 4:
-                            adminOperations.endAuction();
-                            break;
-                        
-                        case 5:
                             running = false;
                             System.out.println("Logging out...");
                             adminOperations.logout(); // Add a logout method in AdminOperations class to handle the logout logic
