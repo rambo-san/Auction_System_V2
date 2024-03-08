@@ -7,9 +7,6 @@ This project is an updated version of the Auction System. It provides a platform
 1. Clone the repository: `git clone https://github.com/your-username/auction-system.git`
 2. Install dependencies: `npm install`
 
-## Usage
-1. Start the server: `npm start`
-2. Access the application in your browser at `http://localhost:3000`
 
 ## Database Queries
 
