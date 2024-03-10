@@ -9,10 +9,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
-    private ConcurrentHashMap<String, Integer> bids;
+    private ConcurrentHashMap<Integer, BidInfo> bids; // Use the current auction's bidId as the key
     private AdminOperations adminOperations;
 
-    public ClientHandler(Socket socket, ConcurrentHashMap<String, Integer> bids, AdminOperations adminOperations) {
+    public ClientHandler(Socket socket, ConcurrentHashMap<Integer, BidInfo> bids, AdminOperations adminOperations) {
         this.clientSocket = socket;
         this.bids = bids;
         this.adminOperations = adminOperations;
@@ -27,7 +27,6 @@ public class ClientHandler implements Runnable {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 if ("START_AUCTION".equalsIgnoreCase(inputLine)) {
-                    // AdminOperations class should handle whether it's appropriate to start the auction
                     adminOperations.startAuction();
                 } else if (inputLine.startsWith("BID")) {
                     handleBidCommand(inputLine, out);
@@ -51,25 +50,32 @@ public class ClientHandler implements Runnable {
 
     private void handleBidCommand(String inputLine, PrintWriter out) {
         String[] parts = inputLine.split(" ");
-        if (parts.length == 3) { // Assuming the command is in the format "BID userid amount"
+        if (parts.length == 3) { // The command is in the format "BID buyerId amount"
             try {
+                int buyerId = Integer.parseInt(parts[1]);
                 int bidAmount = Integer.parseInt(parts[2]);
-                Integer buyerId = Integer.parseInt(parts[1]);
-                System.out.println(buyerId+" has placed a bid of "+bidAmount);
-                //only accept the bid if it's higher than the current highest bid
-                if (bidAmount > bids.getOrDefault("highestBid", 0)) {
-                    bids.put("highestBid", bidAmount);
-                    bids.put("highestBidder", buyerId);
-                    out.println("Bid accepted");
+
+                // Assuming there's only one active auction at a time and its ID is known to AdminOperations
+                int currentBidId = adminOperations.getCurrentBidId(); // This method needs to be implemented in AdminOperations
+
+                if (currentBidId != -1) { // -1 or another value could indicate no active auction
+                    BidInfo currentBidInfo = bids.get(currentBidId);
+
+                    if (currentBidInfo == null || bidAmount > currentBidInfo.getBidAmount()) {
+                        bids.put(currentBidId, new BidInfo(buyerId, bidAmount));
+                        out.println("Bid accepted for " + bidAmount);
+                    } else {
+                        out.println("Bid not accepted. Current highest bid is higher or equal.");
+                    }
                 } else {
-                    out.println("Bid not accepted. Your bid should be higher than the current highest bid.");
+                    out.println("No active auction to place bids.");
                 }
 
             } catch (NumberFormatException e) {
-                out.println("Invalid bid amount");
+                out.println("Invalid bid format.");
             }
         } else {
-            out.println("Invalid bid command");
+            out.println("Invalid bid command.");
         }
     }
 }
