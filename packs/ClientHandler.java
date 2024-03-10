@@ -51,13 +51,20 @@ public class ClientHandler implements Runnable {
 
     private void handleBidCommand(String inputLine, PrintWriter out) {
         String[] parts = inputLine.split(" ");
-        if (parts.length == 3) { // Assuming the command is in the format "BID username amount"
+        if (parts.length == 3) { // Assuming the command is in the format "BID userid amount"
             try {
                 int bidAmount = Integer.parseInt(parts[2]);
-                String username = parts[1];
-                // Update the bid for this user, or add if not present
-                bids.merge(username, bidAmount, Integer::max); // This will keep the highest bid only
-                out.println("Bid accepted for " + username + " with amount " + bidAmount);
+                Integer buyerId = Integer.parseInt(parts[1]);
+                System.out.println(buyerId+" has placed a bid of "+bidAmount);
+                //only accept the bid if it's higher than the current highest bid
+                if (bidAmount > bids.getOrDefault("highestBid", 0)) {
+                    bids.put("highestBid", bidAmount);
+                    bids.put("highestBidder", buyerId);
+                    out.println("Bid accepted");
+                } else {
+                    out.println("Bid not accepted. Your bid should be higher than the current highest bid.");
+                }
+
             } catch (NumberFormatException e) {
                 out.println("Invalid bid amount");
             }

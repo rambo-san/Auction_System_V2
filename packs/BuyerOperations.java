@@ -26,6 +26,7 @@ public class BuyerOperations {
                 if (rs.next()) {
                     System.out.println("Login successful.");
                     buyerMenu(scanner, rs.getInt("buyer_id"));
+
                 } else {
                     System.out.println("Login failed. Incorrect username or password.");
                 }
@@ -60,6 +61,8 @@ public class BuyerOperations {
     }
 
     public static void buyerMenu(Scanner scanner, int buyerId) {
+        
+
         System.out.println("Welcome to the Buyer Dashboard!");
         boolean loggedIn = true;
         while (loggedIn) {
@@ -89,15 +92,14 @@ public class BuyerOperations {
 
 
     private static void placeBid(Scanner scanner, int buyerId) {
+        
             System.out.println("Place a bid");
             System.out.print("Enter the bid amount: ");
             double bidAmount = Double.parseDouble(scanner.nextLine());
 
-            try (Connection conn = DatabaseConnection.getConnection()) {
-                // Your existing code to connect to the database and perform the bid placement
 
-                try (Socket socket = new Socket("serverAddress", 12345)) {
-                    // Create an ObjectOutputStream to send the bid details to the server
+                try {
+                    Socket socket = new Socket("localhost", 12345);
                     ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
                     
@@ -109,15 +111,11 @@ public class BuyerOperations {
                     outputStream.flush();
 
                     System.out.println("Bid placed successfully.");
+                    socket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.out.println("Error sending bid to the server.");
                 }
-                 
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Database error.");
-            }
         }
     private static void viewWonAuctions(Scanner scanner, int buyerId) {
         System.out.println("Your won auctions:");

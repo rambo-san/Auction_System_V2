@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class AdminOperations {
     private Timer auctionTimer;
@@ -39,11 +42,12 @@ public class AdminOperations {
     }
 
     private void startServer() {
+        // ...
+
         System.out.println("Server started. Waiting for admin to start the auction...");
         while (running) {
             try {
-                Socket clientSocket = serverSocket.accept(); // Accept client connection
-                System.out.println("Client connected: " + clientSocket.getInetAddress());
+                Socket clientSocket = serverSocket.accept();
                 // Handle client connection in a separate thread
                 clientHandlerExecutor.submit(new ClientHandler(clientSocket, bids, this)); // Pass 'this' to access auction control methods.
             } catch (IOException e) {
