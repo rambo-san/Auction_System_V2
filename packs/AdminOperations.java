@@ -113,7 +113,6 @@ public class AdminOperations {
             }
         }, 60000); // Auction duration is 1 minute (60 seconds)
     }
-
     public void endAuction() {
         auctionActive = false;
         auctionTimer.cancel();
