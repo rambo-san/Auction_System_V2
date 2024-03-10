@@ -20,8 +20,7 @@ public class AuctionLauncher {
             if (verifyAdminCredentials(username, password)) {
                 System.out.println("Admin authentication successful.");
                 ExecutorService service = Executors.newSingleThreadExecutor();
-                service.submit(() -> adminOperations.initializeServer()); 
-                
+                //service.submit(() -> adminOperations.initializeServer()); 
                 TimeUnit.SECONDS.sleep(2); // Wait for server to start
                 boolean running = true;
                 while (running) {

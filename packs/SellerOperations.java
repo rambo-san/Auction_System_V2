@@ -95,7 +95,7 @@ public class SellerOperations {
         // Assuming 'seller_id' can be retrieved based on the 'username'
         try (Connection conn = DatabaseConnection.getConnection()) {
             // First, insert the product
-            String queryProduct = "INSERT INTO products (name, description, seller_id) VALUES (?, ?, (SELECT seller_id FROM seller WHERE username = ?))";
+            String queryProduct = "INSERT INTO item (name, description, seller_id) VALUES (?, ?, (SELECT seller_id FROM seller WHERE username = ?))";
             try (PreparedStatement stmtProduct = conn.prepareStatement(queryProduct, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 stmtProduct.setString(1, productName);
                 stmtProduct.setString(2, productDescription);
@@ -118,12 +118,12 @@ public class SellerOperations {
     private static void viewListedProducts(Scanner scanner, String username) {
         System.out.println("Your listed products:");
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT p.product_id, p.name, p.description FROM products p INNER JOIN seller s ON p.seller_id = s.seller_id WHERE s.username = ?";
+            String query = "SELECT p.item_id, p.name, p.description FROM item p INNER JOIN seller s ON p.seller_id = s.seller_id WHERE s.username = ?";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, username);
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
-                    System.out.println("Product ID: " + rs.getInt("product_id") + ", Name: " + rs.getString("name") + ", Description: " + rs.getString("description"));
+                    System.out.println("Product ID: " + rs.getInt("item_id") + ", Name: " + rs.getString("name") + ", Description: " + rs.getString("description"));
                 }
             }
         } catch (Exception e) {
@@ -135,14 +135,14 @@ public class SellerOperations {
         System.out.println("Your sold products:");
         try (Connection conn = DatabaseConnection.getConnection()) {
             // Adjust the query to select only items with status = true (1 for sold, assuming boolean is stored as 0/1)
-            String query = "SELECT p.product_id, p.name, p.description FROM products p INNER JOIN seller s ON p.seller_id = s.seller_id WHERE s.username = ? AND p.status = 1";
+            String query = "SELECT p.item_id, p.name, p.description FROM item p INNER JOIN seller s ON p.seller_id = s.seller_id WHERE s.username = ? AND p.status = 1";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, username);
                 ResultSet rs = stmt.executeQuery();
                 boolean hasProducts = false;
                 while (rs.next()) {
                     hasProducts = true;
-                    System.out.println("Product ID: " + rs.getInt("product_id") + ", Name: " + rs.getString("name") + ", Description: " + rs.getString("description"));
+                    System.out.println("Product ID: " + rs.getInt("item_id") + ", Name: " + rs.getString("name") + ", Description: " + rs.getString("description"));
                 }
                 if (!hasProducts) {
                     System.out.println("No sold products found.");

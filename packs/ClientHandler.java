@@ -13,6 +13,7 @@ public class ClientHandler implements Runnable {
     private AdminOperations adminOperations;
 
     public ClientHandler(Socket socket, ConcurrentHashMap<Integer, BidInfo> bids, AdminOperations adminOperations) {
+        System.out.println("The client is here");
         this.clientSocket = socket;
         this.bids = bids;
         this.adminOperations = adminOperations;
