@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class AdminOperations {
 
@@ -60,7 +61,6 @@ public class AdminOperations {
     public void startAuction() {
         int item_id = -1;
         Scanner scanner = new Scanner(System.in);  // Ensure scanner is declared
-
         System.out.println("Available products:");
         try (Connection conn = DatabaseConnection.getConnection()) {
             String query = "SELECT item_id, name, description, seller_id FROM item WHERE status = 0";
@@ -70,12 +70,16 @@ public class AdminOperations {
                     System.out.println("Item ID: " + rs.getInt("item_id") + ", Name: " + rs.getString("name") + ", Description: " + rs.getString("description") + ", Seller ID: " + rs.getInt("seller_id"));
                 }
                 System.out.println("Enter the item ID to start the auction for:");
-                if (scanner.hasNextInt()) {
-                    item_id = scanner.nextInt();
-                } else {
-                    System.out.println("Invalid input. Please enter a number.");
-                    return;
-                }
+                item_id = scanner.nextInt();
+                query="select * from item where item_id="+item_id;
+                try (PreparedStatement st = conn.prepareStatement(query)) {
+                    ResultSet rst = st.executeQuery();
+
+                    if (!rst.next() || rst.getInt("status") == 1) {
+                        System.out.println("Invalid input/Auction ID. Please enter a number.");
+                        return;
+                    }
+            }
                 scanner.close();
             }
         } catch (SQLException e) {
@@ -88,7 +92,7 @@ public class AdminOperations {
             currentBidId = generateBidId();
             auctionLatch = new CountDownLatch(1);
             System.out.println("Auction has started. Accepting bids for 1 minute. Bid ID: " + currentBidId);
-            bids.put(currentBidId, new BidInfo(-1, 0));
+            bids.put(currentBidId, new BidInfo(-1, 0.0));
             startAuctionTimer();
 
             // Start server if not already running (redundant check for clarity)
@@ -111,7 +115,7 @@ public class AdminOperations {
             public void run() {
                 endAuction();
             }
-        }, 60000); // Auction duration is 1 minute (60 seconds)
+        },15000); // Auction duration is 1 minute (60 seconds)
     }
     public void endAuction() {
         auctionActive = false;
@@ -121,9 +125,9 @@ public class AdminOperations {
 
         // Find the winning bid
         Optional<BidInfo> winningBid = bids.values().stream()
-                .max(Comparator.comparingInt(BidInfo::getBidAmount));
+                .max(Comparator.comparingDouble(BidInfo::getBidAmount));
 
-        if (winningBid.isPresent()) {
+        if (winningBid.get().getBuyerId()!=-1) {
             System.out.println("Winner is Buyer ID " + winningBid.get().getBuyerId() + " with a bid of " + winningBid.get().getBidAmount());
         } else {
             System.out.println("No bids received for this auction.");
@@ -131,6 +135,8 @@ public class AdminOperations {
 
         bids.clear();
         auctionLatch.countDown();
+        System.exit(0);
+        
     }
 
     public int getCurrentBidId() {

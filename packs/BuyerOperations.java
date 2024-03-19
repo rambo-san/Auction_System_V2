@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -100,19 +103,21 @@ public class BuyerOperations {
 
                 try {
                     Socket socket = new Socket("localhost", 12345);
-                    ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
-                    
+                    DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     // Create a BidCommand object to send to the server
                     String command = "BID " + buyerId +" " + bidAmount;
-                    
+                    Thread.sleep(2000);
                     // Send the bid command to the server
-                    outputStream.writeObject(command);
+                    System.out.println("Sending bid to the server...");
+                    outputStream.writeBytes(command + "\n");
                     outputStream.flush();
 
                     System.out.println("Bid placed successfully.");
+                    String response = in.readLine();
+                    System.out.println(response);
                     socket.close();
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                     System.out.println("Error sending bid to the server.");
                 }

@@ -9,6 +9,7 @@ public class AuctionLauncher {
     private static final AdminOperations adminOperations = new AdminOperations(); // Assuming AdminOperations is in the packs package
 
     public static void main(String[] args) {
+        
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to the Auction System");
         try {

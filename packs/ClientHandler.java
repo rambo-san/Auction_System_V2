@@ -13,28 +13,33 @@ public class ClientHandler implements Runnable {
     private AdminOperations adminOperations;
 
     public ClientHandler(Socket socket, ConcurrentHashMap<Integer, BidInfo> bids, AdminOperations adminOperations) {
-        System.out.println("The client is here");
         this.clientSocket = socket;
         this.bids = bids;
         this.adminOperations = adminOperations;
+ 
     }
 
     @Override
     public void run() {
-        try (
+        try {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-        ) {
             String inputLine;
+            System.out.println("waiting for input");
             while ((inputLine = in.readLine()) != null) {
-                if ("START_AUCTION".equalsIgnoreCase(inputLine)) {
-                    adminOperations.startAuction();
+                System.out.println("Strrted");
+                
+                if (inputLine.equals("QUIT")) {
+                    System.out.println("Quitting client.");
+
+                    break;
                 } else if (inputLine.startsWith("BID")) {
+                    System.out.println("bid command");
+                    System.out.println("clientSays: " + inputLine);
                     handleBidCommand(inputLine, out);
-                } else if ("END_AUCTION".equalsIgnoreCase(inputLine)) {
-                    adminOperations.endAuction();
                 } else {
-                    out.println("Unknown command");
+                    System.out.println("Invalid command."+inputLine);
+                    out.println("Invalid commaiojnd.");
                 }
             }
         } catch (IOException e) {
@@ -51,10 +56,11 @@ public class ClientHandler implements Runnable {
 
     private void handleBidCommand(String inputLine, PrintWriter out) {
         String[] parts = inputLine.split(" ");
+        System.out.println(inputLine+ parts.length);
         if (parts.length == 3) { // The command is in the format "BID buyerId amount"
             try {
                 int buyerId = Integer.parseInt(parts[1]);
-                int bidAmount = Integer.parseInt(parts[2]);
+                Double bidAmount = Double.parseDouble(parts[2]);
 
                 // Assuming there's only one active auction at a time and its ID is known to AdminOperations
                 int currentBidId = adminOperations.getCurrentBidId(); // This method needs to be implemented in AdminOperations
