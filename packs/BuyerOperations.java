@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class BuyerOperations {
@@ -107,7 +106,7 @@ public class BuyerOperations {
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     // Create a BidCommand object to send to the server
                     String command = "BID " + buyerId +" " + bidAmount;
-                    Thread.sleep(2000);
+                    //Thread.sleep(2000);
                     // Send the bid command to the server
                     System.out.println("Sending bid to the server...");
                     outputStream.writeBytes(command + "\n");
@@ -117,7 +116,7 @@ public class BuyerOperations {
                     String response = in.readLine();
                     System.out.println(response);
                     socket.close();
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e){
                     e.printStackTrace();
                     System.out.println("Error sending bid to the server.");
                 }
@@ -125,14 +124,14 @@ public class BuyerOperations {
     private static void viewWonAuctions(Scanner scanner, int buyerId) {
         System.out.println("Your won auctions:");
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT bid_id, product_id, bid_amount FROM bids where buyer_id = ?";
+            String query = "SELECT bid_id, item_id, bid_amount FROM bid where buyer_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setInt(1, buyerId);
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
-                    System.out.println("Bid ID: " + rs.getInt("bid_id"));
-                    System.out.println("Product ID: " + rs.getInt("product_id"));
-                    System.out.println("Bid Amount: " + rs.getDouble("bid_amount"));
+                    System.out.print("Bid ID: " + rs.getInt("bid_id"));
+                    System.out.print("\tItem ID: " + rs.getInt("item_id"));
+                    System.out.println("\tBid Amount: " + rs.getDouble("bid_amount"));
                 }
             }
         } catch (Exception e) {

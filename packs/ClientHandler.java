@@ -34,12 +34,12 @@ public class ClientHandler implements Runnable {
 
                     break;
                 } else if (inputLine.startsWith("BID")) {
-                    System.out.println("bid command");
-                    System.out.println("clientSays: " + inputLine);
+                   // System.out.println("bid command");
+                    System.out.println("New Bid: " + inputLine);
                     handleBidCommand(inputLine, out);
                 } else {
                     System.out.println("Invalid command."+inputLine);
-                    out.println("Invalid commaiojnd.");
+                    out.println("Invalid command.");
                 }
             }
         } catch (IOException e) {
@@ -56,7 +56,7 @@ public class ClientHandler implements Runnable {
 
     private void handleBidCommand(String inputLine, PrintWriter out) {
         String[] parts = inputLine.split(" ");
-        System.out.println(inputLine+ parts.length);
+        //System.out.println(inputLine+ parts.length);
         if (parts.length == 3) { // The command is in the format "BID buyerId amount"
             try {
                 int buyerId = Integer.parseInt(parts[1]);
